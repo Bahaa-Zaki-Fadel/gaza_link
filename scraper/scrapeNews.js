@@ -1,5 +1,4 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,40 +7,35 @@ const URL = 'https://www.motqdmon.com/search/label/%D8%A7%D9%84%D9%85%D8%B3%D8%A
 
 const scrapeNews = async () => {
   try {
-    const { data } = await axios.get(URL);
-    const $ = cheerio.load(data);
-
-    let existingNews = [];
-    if (fs.existsSync(FILE_PATH)) {
-      existingNews = JSON.parse(fs.readFileSync(FILE_PATH));
-    }
-
-    const newNews = [];
-
-    $('h3.post-title').each((i, el) => {
-      if (i >= 10) return; // أول 10 أخبار فقط
-
-      const title = $(el).text().trim();
-      const link = $(el).find('a').attr('href');
-
-      // تفاصيل قصيرة: ناخذ أول فقرة أو نص بسيط داخل البوست
-      const description = $(el).parent().find('p').first().text().trim() || '';
-
-      // آخر موعد للتقديم: حاول نلقاه داخل span أو strong يحتوي كلمة "آخر موعد"
-      let deadline = $(el).parent().find('p:contains("آخر موعد")').text().trim();
-      if (!deadline) deadline = "غير محدد";
-
-      const date = new Date().toISOString(); // وقت الإضافة الحالي
-
-      // منع التكرار
-      if (!existingNews.find(n => n.title === title)) {
-        newNews.push({ title, link, date, deadline, description });
-      }
+    // تأكد أن Puppeteer يستخدم Chrome المثبت
+    const browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      executablePath: '/opt/render/.cache/puppeteer/chrome/linux-145.0.7632.46/chrome-linux64/chrome' // مسار Chrome على Render
     });
 
-    const allNews = [...newNews, ...existingNews];
-    fs.writeFileSync(FILE_PATH, JSON.stringify(allNews, null, 2));
-    console.log(`✅ تم تحديث الأخبار (${newNews.length} جديد)`);
+    const page = await browser.newPage();
+    await page.goto(URL, { waitUntil: 'networkidle2' });
+
+    // مثال: جلب أول 10 عناوين
+    const news = await page.evaluate(() => {
+      const results = [];
+      document.querySelectorAll('h3.post-title').forEach((el, i) => {
+        if (i >= 10) return;
+        const title = el.innerText.trim();
+        const link = el.querySelector('a')?.href || '';
+        results.push({ title, link });
+      });
+      return results;
+    });
+
+    if (!fs.existsSync(path.dirname(FILE_PATH))) {
+      fs.mkdirSync(path.dirname(FILE_PATH), { recursive: true });
+    }
+    fs.writeFileSync(FILE_PATH, JSON.stringify(news, null, 2));
+
+    console.log(`✅ تم تحديث الأخبار (${news.length})`);
+    await browser.close();
   } catch (err) {
     console.log('⚠️ خطأ أثناء جلب الأخبار:', err.message);
   }
