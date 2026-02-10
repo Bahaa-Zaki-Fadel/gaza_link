@@ -58,19 +58,20 @@ body {
   content: "";
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 50%;
+  
+  left: -50%;
+  width: 100%;
   height: 100%;
   background: linear-gradient(
     45deg,
-    rgba(255, 255, 200, 0) 0%,
-    rgba(255, 255, 200, 0.5) 50%,
-    rgba(255, 255, 200, 0) 100%
+    rgba(202, 202, 28, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(243, 243, 240, 0) 100%
   );
-  transform: skewX(-25deg);
+  transform: skewX(-0deg);
   pointer-events: none;
   z-index: 2;
-  animation: shineAuto 10s linear forwards;
+  animation: shineAuto 5s linear forwards;
 }
 
 /* حركة اللمعة التلقائية */
@@ -216,9 +217,9 @@ body {
   text-align: center;
   padding: 15px 10px;
   font-size: 0.9rem;
-  color: #ccc;
+  color: #f8f8f8;
   background: linear-gradient(135deg, #1a1a2e, #162447);
-  border-top: 2px solid #ff416c;
+  border-top: 0.5px solid #ff416c;
   margin-top: 50px;
 }
 
@@ -362,8 +363,8 @@ body {
 }
 
 .pagination button {
-  width: 50px; /* مربع */
-  height: 50px;
+  width: 40px; /* مربع */
+  height: 40px;
   border: none;
   border-radius: 10px;
   background: linear-gradient(135deg, #ff4b2b, #ff416c);

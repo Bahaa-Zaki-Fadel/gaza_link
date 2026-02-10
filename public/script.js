@@ -31,7 +31,7 @@ async function loadNews() {
       const createdDate = new Date(n.created_at);
       const diffDays = Math.floor((new Date() - createdDate) / (1000*60*60*24));
 
-      const newLabel = (n.isNew && diffDays < 3) ? "<strong style='color:red'>جديد </strong><br>" : "";
+      const newLabel = (n.isNew && diffDays < 3) ? "<strong style='color:red'>!جديد </strong><br>" : "";
 
       // محتوى البطاقة في الوسط
       card.style.textAlign = "center";
@@ -40,12 +40,15 @@ async function loadNews() {
         `<h3>${n.title}</h3>
         ${newLabel}
         <p>${n.summary || ""}</p>
-        <p>🕒 تم الإضافة: ${createdDate.toLocaleString("ar-PS")}</p>
-        <p>⏰ آخر موعد للتقديم: ${getDeadline(n)}</p>
+        <p>🕒  تم الإضافة: ${createdDate.toLocaleString("ar-PS")}</p>
+        <p>⏰ آخر موعد : ${getDeadline(n)}</p>
         ${
           n.link 
             ? `<a href="${n.link}" target="_blank" style="display:inline-block; margin-top:5px;">🔗 التسجيل من هنا</a>`
-            : `<span style="color:red; font-weight:bold; display:inline-block; margin-top:5px;">  نعتذر، الرابط غير متوفر سيتم ارفاقه قريبا</span>`
+            : `<span style="color:red; font-weight:bold; display:inline-block; margin-top:5px;"> 
+           نعتذر حدث خطأ سنحل  المشكلة قريبا
+           
+            </span>`
         }`
       ;
 
