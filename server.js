@@ -1,8 +1,15 @@
 const express = require("express");
 const Parser = require("rss-parser");
-const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
+
+// معرفة البيئة
+const isRender = !!process.env.RENDER;
+
+// اختيار Puppeteer المناسب
+const puppeteer = isRender
+  ? require("puppeteer-core")
+  : require("puppeteer");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -21,7 +28,7 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// تحميل الأخبار المحفوظة
+// تحميل الأخبار القديمة
 let newsData = [];
 if (fs.existsSync(DATA_FILE)) {
   try {
@@ -32,19 +39,15 @@ if (fs.existsSync(DATA_FILE)) {
 }
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
 /* ======================================
    استخراج بيانات الخبر
 ====================================== */
 async function extractData(page, link) {
   try {
-    await page.goto(link, {
-      waitUntil: "domcontentloaded",
-      timeout: 30000
-    });
+    await page.goto(link, { waitUntil: "domcontentloaded", timeout: 30000 });
 
-    const result = await page.evaluate(() => {
+    return await page.evaluate(() => {
       const nodes = document.querySelectorAll(
         "article p, article div, main p, main div"
       );
@@ -64,17 +67,14 @@ async function extractData(page, link) {
         sentences.slice(0, 2).join(". ") +
         (sentences.length > 2 ? "..." : "");
 
-      // آخر موعد
       let deadline = null;
       const match = text.match(
         /(\d{1,2}\s+\S+\s+\d{4}(\s+\d{1,2}:\d{2})?)/
       );
       if (match) deadline = match[1];
 
-      // الرابط الأصلي
       let originalLink = null;
-      const links = document.querySelectorAll("article a");
-      links.forEach(a => {
+      document.querySelectorAll("article a").forEach(a => {
         if (
           a.href &&
           !a.href.includes("motqdmon.com") &&
@@ -86,10 +86,8 @@ async function extractData(page, link) {
 
       return { summary, deadline, originalLink };
     });
-
-    return result;
   } catch (err) {
-    console.log("⚠️ فشل استخراج الخبر:", err.message);
+    console.log("⚠️ فشل استخراج البيانات:", err.message);
     return { summary: "", deadline: null, originalLink: null };
   }
 }
@@ -104,7 +102,17 @@ async function scrapeNews() {
   try {
     browser = await puppeteer.launch({
       headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+
+      // 🔑 الحل النهائي: مسار Chrome حسب البيئة
+      executablePath: isRender
+        ? process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome"
+        : undefined, // على Windows يستخدم puppeteer العادي
+
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+      ]
     });
 
     const page = await browser.newPage();
@@ -120,8 +128,6 @@ async function scrapeNews() {
         : new Date();
 
       if (!title || !pageLink) continue;
-
-      // منع التكرار
       if (newsData.some(n => n.title === title)) continue;
 
       const { summary, deadline, originalLink } =
@@ -140,13 +146,11 @@ async function scrapeNews() {
       console.log("✔️ أُضيف:", title);
     }
 
-    // ترتيب من الأحدث للأقدم
     newsData.sort(
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );
 
     fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2));
-
     console.log(`✅ تم حفظ ${added} خبر جديد`);
   } catch (err) {
     console.error("❌ خطأ أثناء الجلب:", err.message);
@@ -155,19 +159,16 @@ async function scrapeNews() {
   }
 }
 
-// تشغيل أولي
+// أول تشغيل
 scrapeNews();
-
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
+
 /* ======================================
    API
 ====================================== */
 app.get("/api/news", (req, res) => {
-  res.json({
-    success: true,
-    data: { items: newsData }
-  });
+  res.json({ success: true, data: { items: newsData } });
 });
 
 app.listen(PORT, () => {

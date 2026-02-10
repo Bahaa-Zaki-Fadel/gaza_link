@@ -9,6 +9,7 @@
   "dependencies": {
     "express": "^4.22.1",
     "puppeteer": "^24.37.2",
+    "puppeteer-core": "^24.37.2",
     "rss-parser": "^3.13.0"
   }
 }
