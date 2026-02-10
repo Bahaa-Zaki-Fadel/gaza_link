@@ -5,106 +5,131 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 10000;
+const PORT = process.env.PORT || 10000;
 
 const RSS_URL = "https://www.motqdmon.com/feeds/posts/default?alt=rss";
-const parser = new Parser({ timeout: 30000, headers: { "User-Agent": "Mozilla/5.0" } });
+const parser = new Parser({
+  timeout: 30000,
+  headers: { "User-Agent": "Mozilla/5.0" }
+});
 
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "news.json");
 
-// إنشاء مجلد البيانات إذا لم يكن موجود
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-
-// تحميل الأخبار من الملف لو موجود
-let newsData = [];
-if (fs.existsSync(DATA_FILE)) {
-  try { newsData = JSON.parse(fs.readFileSync(DATA_FILE, "utf8")); }
-  catch { newsData = []; }
+// إنشاء مجلد البيانات
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-app.use(express.static(path.join(__dirname, "public")));
+// تحميل الأخبار المحفوظة
+let newsData = [];
+if (fs.existsSync(DATA_FILE)) {
+  try {
+    newsData = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+  } catch {
+    newsData = [];
+  }
+}
+
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 /* ======================================
-   استخراج البيانات من صفحة الخبر
+   استخراج بيانات الخبر
 ====================================== */
 async function extractData(page, link) {
   try {
-    await page.goto(link, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.goto(link, {
+      waitUntil: "domcontentloaded",
+      timeout: 30000
+    });
 
     const result = await page.evaluate(() => {
-      const paragraphs = Array.from(document.querySelectorAll("article p, article div, main p, main div"));
-      let text = paragraphs.map(p => p.innerText).join(" ").replace(/\s+/g, " ").trim();
+      const nodes = document.querySelectorAll(
+        "article p, article div, main p, main div"
+      );
 
-      // إزالة أي جمل غير ضرورية
-      text = text.split(/[.؟!]/).filter(s => {
-        const lower = s.toLowerCase();
-        return !lower.includes("المتقدمون") && !lower.includes("اكتشف") && !lower.includes("المزيد");
-      }).join(". ");
+      let text = Array.from(nodes)
+        .map(n => n.innerText)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-      const sentences = text.split(/[.؟!]/).map(s => s.trim()).filter(s => s.length > 0);
-      const summary = sentences.slice(0, 2).join(". ") + (sentences.length > 2 ? "..." : "");
+      const sentences = text
+        .split(/[.؟!]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
 
-      // ===== آخر موعد =====
+      const summary =
+        sentences.slice(0, 2).join(". ") +
+        (sentences.length > 2 ? "..." : "");
+
+      // آخر موعد
       let deadline = null;
-      const deadlineMatch = text.match(/(\d{1,2}\s+\S+\s+\d{4}(\s+\d{1,2}:\d{2})?)/);
-      if (deadlineMatch && deadlineMatch[1]) {
-        deadline = deadlineMatch[1].trim(); // التاريخ + الوقت
-      }
+      const match = text.match(
+        /(\d{1,2}\s+\S+\s+\d{4}(\s+\d{1,2}:\d{2})?)/
+      );
+      if (match) deadline = match[1];
 
-      // ===== الرابط النهائي =====
+      // الرابط الأصلي
       let originalLink = null;
-      const anchors = Array.from(document.querySelectorAll("article a"));
-      for (let i = anchors.length - 1; i >= 0; i--) {
-        const a = anchors[i];
-        const href = a.href || "";
-        const txt = (a.innerText || "").trim();
-        if (href && !href.includes("motqdmon.com") &&
-            !txt.includes("اكتشف") && !txt.includes("المزيد") && !txt.includes("المتقدمون") &&
-            (txt.includes("تقديم")||  txt.includes("تسجيل")||  txt.includes("اضغط") || txt.includes("تحديث البيانات"))) {
-          originalLink = href;
-          break;
+      const links = document.querySelectorAll("article a");
+      links.forEach(a => {
+        if (
+          a.href &&
+          !a.href.includes("motqdmon.com") &&
+          a.innerText.includes("تقديم")
+        ) {
+          originalLink = a.href;
         }
-      }
+      });
 
       return { summary, deadline, originalLink };
     });
 
     return result;
-
   } catch (err) {
-    console.log("⚠️ فشل استخراج البيانات:", err.message);
+    console.log("⚠️ فشل استخراج الخبر:", err.message);
     return { summary: "", deadline: null, originalLink: null };
   }
 }
 
 /* ======================================
-   جلب الأخبار من RSS + معالجة الصفحة
+   جلب الأخبار
 ====================================== */
 async function scrapeNews() {
   console.log("🔍 بدأ تنفيذ scrapeNews");
+
   let browser;
   try {
-    browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
     const page = await browser.newPage();
     const feed = await parser.parseURL(RSS_URL);
 
     let added = 0;
+
     for (const item of feed.items) {
       const title = item.title?.trim();
       const pageLink = item.link?.trim();
-      const created_at = item.pubDate ? new Date(item.pubDate) : new Date();
+      const created_at = item.pubDate
+        ? new Date(item.pubDate)
+        : new Date();
+
       if (!title || !pageLink) continue;
 
-      // منع التكرار: إذا العنوان أو الرابط النهائي موجود مسبقاً
-      if (newsData.some(n => n.title === title || n.link === pageLink)) continue;
+      // منع التكرار
+      if (newsData.some(n => n.title === title)) continue;
 
-      const { summary, deadline, originalLink } = await extractData(page, pageLink);
+      const { summary, deadline, originalLink } =
+        await extractData(page, pageLink);
 
       newsData.push({
         title,
-        link: originalLink || null,
+        link: originalLink || pageLink,
         created_at,
         summary,
         deadline,
@@ -115,28 +140,36 @@ async function scrapeNews() {
       console.log("✔️ أُضيف:", title);
     }
 
-    // ترتيب الأخبار من الأحدث للأقدم
-    newsData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2));
-    console.log(`✅ تم حفظ ${added} خبر جديد`);
+    // ترتيب من الأحدث للأقدم
+    newsData.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
 
+    fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2));
+
+    console.log(`✅ تم حفظ ${added} خبر جديد`);
   } catch (err) {
-    console.error("❌ خطأ عند جلب الأخبار:", err.message);
+    console.error("❌ خطأ أثناء الجلب:", err.message);
   } finally {
     if (browser) await browser.close();
   }
 }
 
-// أول تحميل
+// تشغيل أولي
 scrapeNews();
+
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
-
 /* ======================================
    API
 ====================================== */
 app.get("/api/news", (req, res) => {
-  res.json({ success: true, data: { items: newsData } });
+  res.json({
+    success: true,
+    data: { items: newsData }
+  });
 });
 
-app.listen(PORT, () => console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`);
+});
