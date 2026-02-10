@@ -1,15 +1,8 @@
 const express = require("express");
 const Parser = require("rss-parser");
+const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
-
-// معرفة البيئة
-const isRender = !!process.env.RENDER;
-
-// اختيار Puppeteer المناسب
-const puppeteer = isRender
-  ? require("puppeteer-core")
-  : require("puppeteer");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -101,18 +94,8 @@ async function scrapeNews() {
   let browser;
   try {
     browser = await puppeteer.launch({
-      headless: "new",
-
-      // 🔑 الحل النهائي: مسار Chrome حسب البيئة
-      executablePath: isRender
-        ? process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome"
-        : undefined, // على Windows يستخدم puppeteer العادي
-
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
-      ]
+      headless: "new", // أو true
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
     const page = await browser.newPage();
@@ -161,6 +144,7 @@ async function scrapeNews() {
 
 // أول تشغيل
 scrapeNews();
+
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
 
