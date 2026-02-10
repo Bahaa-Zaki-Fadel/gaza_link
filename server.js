@@ -34,9 +34,7 @@ if (fs.existsSync(DATA_FILE)) {
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-/* ======================================
-   استخراج البيانات من صفحة الخبر
-====================================== */
+/* استخراج البيانات من صفحة الخبر */
 async function extractData(page, link) {
   try {
     await page.goto(link, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -52,35 +50,21 @@ async function extractData(page, link) {
         .replace(/\s+/g, " ")
         .trim();
 
-      // إزالة جمل غير ضرورية
       text = text
         .split(/[.؟!]/)
         .filter(s => {
           const lower = s.toLowerCase();
-          return (
-            !lower.includes("المتقدمون") &&
-            !lower.includes("اكتشف") &&
-            !lower.includes("المزيد")
-          );
+          return !lower.includes("المتقدمون") && !lower.includes("اكتشف") && !lower.includes("المزيد");
         })
         .join(". ");
 
-      const sentences = text
-        .split(/[.؟!]/)
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+      const sentences = text.split(/[.؟!]/).map(s => s.trim()).filter(s => s.length > 0);
+      const summary = sentences.slice(0, 2).join(". ") + (sentences.length > 2 ? "..." : "");
 
-      const summary =
-        sentences.slice(0, 2).join(". ") + (sentences.length > 2 ? "..." : "");
-
-      // آخر موعد
       let deadline = null;
-      const deadlineMatch = text.match(
-        /(\d{1,2}\s+\S+\s+\d{4}(\s+\d{1,2}:\d{2})?)/
-      );
+      const deadlineMatch = text.match(/(\d{1,2}\s+\S+\s+\d{4}(\s+\d{1,2}:\d{2})?)/);
       if (deadlineMatch && deadlineMatch[1]) deadline = deadlineMatch[1].trim();
 
-      // الرابط النهائي
       let originalLink = null;
       const anchors = Array.from(document.querySelectorAll("article a"));
       for (let i = anchors.length - 1; i >= 0; i--) {
@@ -93,10 +77,7 @@ async function extractData(page, link) {
           !txt.includes("اكتشف") &&
           !txt.includes("المزيد") &&
           !txt.includes("المتقدمون") &&
-          (txt.includes("تقديم") ||
-            txt.includes("تسجيل") ||
-            txt.includes("اضغط") ||
-            txt.includes("تحديث البيانات"))
+          (txt.includes("تقديم") || txt.includes("تسجيل") || txt.includes("اضغط") || txt.includes("تحديث البيانات"))
         ) {
           originalLink = href;
           break;
@@ -113,15 +94,12 @@ async function extractData(page, link) {
   }
 }
 
-/* ======================================
-   جلب الأخبار من RSS + Puppeteer
-====================================== */
+/* جلب الأخبار من RSS + Puppeteer */
 async function scrapeNews() {
   console.log("🔍 بدأ تنفيذ scrapeNews");
   let browser;
   try {
-    // أهم تعديل: حذف executablePath
-    // Puppeteer سيستخدم Chromium المدمج داخله
+    // 🟢 مهم: بدون أي executablePath
     browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"]
@@ -138,9 +116,8 @@ async function scrapeNews() {
       const created_at = item.pubDate ? new Date(item.pubDate) : new Date();
 
       if (!title || !pageLink) continue;
-
-      // منع التكرار
       if (newsData.some(n => n.title === title || n.link === pageLink)) continue;
+
       const { summary, deadline, originalLink } = await extractData(page, pageLink);
 
       newsData.push({
@@ -156,12 +133,8 @@ async function scrapeNews() {
       console.log("✔️ أُضيف:", title);
     }
 
-    // ترتيب الأخبار من الأحدث للأقدم
     newsData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    // حفظ البيانات
     fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2));
-
     console.log(`✅ تم حفظ ${added} خبر جديد`);
   } catch (err) {
     console.error("❌ خطأ عند جلب الأخبار:", err.message);
@@ -176,9 +149,7 @@ scrapeNews();
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
 
-/* ======================================
-   API
-====================================== */
+/* API */
 app.get("/api/news", (req, res) => {
   res.json({ success: true, data: { items: newsData } });
 });
