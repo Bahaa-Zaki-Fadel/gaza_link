@@ -7,9 +7,7 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-const RSS_URL =
-  "https://www.motqdmon.com/feeds/posts/default?alt=rss";
-
+const RSS_URL = "https://www.motqdmon.com/feeds/posts/default?alt=rss";
 const parser = new Parser({
   timeout: 30000,
   headers: { "User-Agent": "Mozilla/5.0" }
@@ -18,8 +16,10 @@ const parser = new Parser({
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "news.json");
 
+// إنشاء مجلد البيانات
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
+// تحميل الأخبار لو موجودة
 let newsData = [];
 if (fs.existsSync(DATA_FILE)) {
   try {
@@ -32,6 +32,9 @@ if (fs.existsSync(DATA_FILE)) {
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
+/* ======================================
+استخراج البيانات من صفحة الخبر
+====================================== */
 async function extractData(page, link) {
   try {
     await page.goto(link, {
@@ -39,51 +42,110 @@ async function extractData(page, link) {
       timeout: 30000
     });
 
-    return await page.evaluate(() => {
+    const result = await page.evaluate(() => {
       const paragraphs = Array.from(
-        document.querySelectorAll("article p, main p")
+        document.querySelectorAll("article p, article div, main p, main div")
       );
 
-      const text = paragraphs
+      let text = paragraphs
         .map(p => p.innerText)
         .join(" ")
         .replace(/\s+/g, " ")
         .trim();
 
+      text = text
+        .split(/[.؟!]/)
+        .filter(s => {
+          const lower = s.toLowerCase();
+          return (
+            !lower.includes("المتقدمون") &&
+            !lower.includes("اكتشف") &&
+            !lower.includes("المزيد")
+          );
+        })
+        .join(". ");
+
       const sentences = text
         .split(/[.؟!]/)
         .map(s => s.trim())
-        .filter(Boolean);
+        .filter(s => s.length > 0);
 
       const summary =
         sentences.slice(0, 2).join(". ") +
         (sentences.length > 2 ? "..." : "");
 
-      return { summary };
+      let deadline = null;
+      const deadlineMatch = text.match(
+        /(\d{1,2}\s+\S+\s+\d{4}(\s+\d{1,2}:\d{2})?)/
+      );
+      if (deadlineMatch && deadlineMatch[1]) {
+        deadline = deadlineMatch[1].trim();
+      }
+
+      let originalLink = null;
+      const anchors = Array.from(document.querySelectorAll("article a"));
+
+      for (let i = anchors.length - 1; i >= 0; i--) {
+        const a = anchors[i];
+        const href = a.href || "";
+        const txt = (a.innerText || "").trim();
+
+        if (
+          href &&
+          !href.includes("motqdmon.com") &&
+          !txt.includes("اكتشف") &&
+          !txt.includes("المزيد") &&
+          !txt.includes("المتقدمون") &&
+          (
+            txt.includes("تقديم") ||
+            txt.includes("تسجيل") ||
+            txt.includes("اضغط") ||
+            txt.includes("تحديث البيانات")
+          )
+        ) {
+          originalLink = href;
+          break;
+        }
+      }
+
+      return { summary, deadline, originalLink };
     });
-  } catch {
-    return { summary: "" };
+
+    return result;
+
+  } catch (err) {
+    console.log("⚠️ فشل استخراج البيانات:", err.message);
+    return { summary: "", deadline: null, originalLink: null };
   }
 }
 
+/* ======================================
+جلب الأخبار من RSS
+====================================== */
 async function scrapeNews() {
   console.log("🔍 بدأ تنفيذ scrapeNews");
-  let browser;
 
+  let browser;
   try {
+
+    // ===============================
+    // ⭐⭐⭐ التعديل هون بالضبط ⭐⭐⭐
+    // حل مشكلة Chrome على Render
+    // ===============================
     browser = await puppeteer.launch({
-      headless: "new",
+      headless: true,
       args: [
         "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--single-process"
+        "--disable-setuid-sandbox"
       ]
     });
+    // ⬆️ هذا هو التعديل الوحيد
+    // ⬆️ شيلنا executablePath
+    // ⬆️ وخليّنا Puppeteer يستخدم Chromium تبعه
 
     const page = await browser.newPage();
     const feed = await parser.parseURL(RSS_URL);
+
     let added = 0;
 
     for (const item of feed.items) {
@@ -94,15 +156,22 @@ async function scrapeNews() {
         : new Date();
 
       if (!title || !pageLink) continue;
-      if (newsData.some(n => n.title === title)) continue;
+      if (
+        newsData.some(
+          n => n.title === title || n.link === pageLink
+        )
+      ) continue;
 
-      const { summary } = await extractData(page, pageLink);
+      const { summary, deadline, originalLink } =
+        await extractData(page, pageLink);
 
       newsData.push({
         title,
-        link: pageLink,
+        link: originalLink || pageLink,
         created_at,
-        summary
+        summary,
+        deadline,
+        isNew: true
       });
 
       added++;
@@ -113,20 +182,34 @@ async function scrapeNews() {
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );
 
-    fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2));
+    fs.writeFileSync(
+      DATA_FILE,
+      JSON.stringify(newsData, null, 2)
+    );
+
     console.log(`✅ تم حفظ ${added} خبر جديد`);
+
   } catch (err) {
-    console.error("❌ خطأ:", err.message);
+    console.error("❌ خطأ عند جلب الأخبار:", err.message);
   } finally {
     if (browser) await browser.close();
   }
 }
 
+// أول تشغيل
 scrapeNews();
+
+// تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
 
+/* ======================================
+API
+====================================== */
 app.get("/api/news", (req, res) => {
-  res.json({ success: true, items: newsData });
+  res.json({
+    success: true,
+    data: { items: newsData }
+  });
 });
 
 app.listen(PORT, () => {
