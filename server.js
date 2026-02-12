@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 30000;
 const RSS_URL = "https://www.motqdmon.com/feeds/posts/default?alt=rss";
 const parser = new Parser({
   timeout: 30000,
