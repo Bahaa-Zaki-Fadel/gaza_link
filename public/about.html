@@ -3,86 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عن الموقع - مساعدات الآن</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <title>عن الموقع - LinkGaza</title>
   <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LBCEEYF9Q7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-  <!-- شريط التنقل -->
-  <nav class="navbar">
-    <ul class="nav-links">
-      <li><a href="index.html">الرئيسية</a></li>
-      <li><a href="about.html">عن الموقع</a></li>
-      <li><a href="contact.html">تواصل معنا</a></li>
-    </ul>
+  gtag('config', 'G-LBCEEYF9Q7', {
+    page_path: window.location.pathname
+  });
+</script>
+</head>
+<body class="about-page">
+
+  <nav class="glass-navbar">
+    <div class="nav-wrapper">
+      <div class="logo" onclick="window.location.href='index.html'">Link<span>Gaza</span></div>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="about.html">عن الموقع</a></li>
+        <li><a href="contact.html">تواصل معنا</a></li>
+      </ul>
+      <div class="menu-btn" id="menuBtn">☰</div>
+    </div>
   </nav>
 
-  <!-- الهيدر -->
   <header class="hero">
     <h1>🎯 عن الموقع</h1>
     <p>تعرف على هدف موقعنا وكيفية تقديم المساعدات.</p>
   </header>
 
-  <!-- محتوى الصفحة -->
-  <main class="container">
-    <section class="section">
-  <h2>عن موقعنا</h2>
-  <p>
-    مرحبًا بك في LinkGaza  الموقع مخصص لتقديم أحدث المعلومات عن المساعدات والفرص المتاحة 
-    بشكل فوري، مباشرة على جهازك. نسعى لجعل الوصول للمساعدات أسهل وأسرع لجميع المستخدمين.
-  </p>
-</section>
-
-<section class="section">
-  <h2>لماذا نحن؟</h2>
-  <p>
-    نحن نركز على التحديث اللحظي للأخبار والمساعدات، ونضمن تنظيمها بطريقة سلسة وواضحة. هدفنا أن يكون لديك مصدر موثوق وسريع للمعلومات المهمة، 
-    بدون عناء البحث في مواقع متعددة.
-  </p>
-</section>
-
-<section class="section">
-  <h2>كيفية التواصل معنا</h2>
-  <p>
-    لأي استفسار أو اقتراح، يمكنك الوصول إلينا بسهولة من خلال صفحة "تواصل معنا" في الاعلى. نحن نهتم بتلقي ملاحظاتك لتحسين تجربتك.
-  </p>
-</section>
+  <main class="container about-page">
+    <div class="cards">
+      <div class="card">
+        <h3>🎯 من نحن</h3>
+        <p>مرحبًا بك في <strong>LinkGaza</strong>، منصة مخصصة لتقديم أحدث المعلومات حول المساعدات والفرص المتاحة بشكل فوري ومباشر. هدفنا تسهيل الوصول للمعلومة بسرعة ووضوح.</p>
+      </div>
+      <div class="card">
+        <h3>⚡️ رؤيتنا</h3>
+        <p>نسعى أن نكون المصدر الأسرع والأكثر موثوقية في نشر تحديثات المساعدات، بحيث يحصل المستخدم على المعلومة دون الحاجة للبحث في عدة أماكن.</p>
+      </div>
+      <div class="card">
+        <h3>🤝 رسالتنا</h3>
+        <p>تنظيم الأخبار والمساعدات بطريقة واضحة وسلسة، مع تحديث لحظي ومستمر، لضمان وصول المعلومات المهمة إليك في الوقت المناسب.</p>
+      </div>
+    </div>
   </main>
 
-  <!-- حقوق النشر -->
   <footer class="footer">
     © 2026 جميع الحقوق محفوظة لـ LinkGaza
   </footer>
-  <button id="toTop">
-  <svg width="20" height="20" viewBox="0 0 24 24">
-    <path d="M6 14 L12 6 L18 14" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-  </svg>
-</button>
 
-  <!-- زر العودة للأعلى -->
-  <button id="toTop">⤴️</button>
+  <button id="toTop">
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path d="M6 14 L12 6 L18 14"/>
+    </svg>
+  </button>
 
   <script src="script.js"></script>
 </body>
 </html>
-<script>
-  // عند تحميل الصفحة، اعطِ fade in
-  window.addEventListener('load', () => {
-    document.body.classList.add('loaded');
-  });
-
-  // تأثير fade عند الانتقال لصفحة جديدة من navbar
-  document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', function(e) {
-      const url = this.href;
-      if (url !== window.location.href) {
-        e.preventDefault();
-        document.body.classList.remove('loaded'); // fade out
-        setTimeout(() => {
-          window.location.href = url;
-        }, 500); // نفس مدة الانتقال في CSS
-      }
-    });
-  });
-</script>

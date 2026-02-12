@@ -6,7 +6,6 @@ const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
-
 const RSS_URL = "https://www.motqdmon.com/feeds/posts/default?alt=rss";
 const parser = new Parser({
   timeout: 30000,
@@ -32,9 +31,7 @@ if (fs.existsSync(DATA_FILE)) {
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-/* ======================================
-استخراج البيانات من صفحة الخبر
-====================================== */
+/* ====================================== استخراج البيانات من صفحة الخبر ====================================== */
 async function extractData(page, link) {
   try {
     await page.goto(link, {
@@ -46,7 +43,6 @@ async function extractData(page, link) {
       const paragraphs = Array.from(
         document.querySelectorAll("article p, article div, main p, main div")
       );
-
       let text = paragraphs
         .map(p => p.innerText)
         .join(" ")
@@ -84,12 +80,10 @@ async function extractData(page, link) {
 
       let originalLink = null;
       const anchors = Array.from(document.querySelectorAll("article a"));
-
       for (let i = anchors.length - 1; i >= 0; i--) {
         const a = anchors[i];
         const href = a.href || "";
         const txt = (a.innerText || "").trim();
-
         if (
           href &&
           !href.includes("motqdmon.com") &&
@@ -108,40 +102,27 @@ async function extractData(page, link) {
         }
       }
 
+      // إذا لم يجد رابط، نتركه null
       return { summary, deadline, originalLink };
     });
 
     return result;
-
   } catch (err) {
     console.log("⚠️ فشل استخراج البيانات:", err.message);
     return { summary: "", deadline: null, originalLink: null };
   }
 }
 
-/* ======================================
-جلب الأخبار من RSS
-====================================== */
+/* ====================================== جلب الأخبار من RSS ====================================== */
 async function scrapeNews() {
   console.log("🔍 بدأ تنفيذ scrapeNews");
-
   let browser;
-  try {
 
-    // ===============================
-    // ⭐⭐⭐ التعديل هون بالضبط ⭐⭐⭐
-    // حل مشكلة Chrome على Render
-    // ===============================
+  try {
     browser = await puppeteer.launch({
       headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox"
-      ]
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
-    // ⬆️ هذا هو التعديل الوحيد
-    // ⬆️ شيلنا executablePath
-    // ⬆️ وخليّنا Puppeteer يستخدم Chromium تبعه
 
     const page = await browser.newPage();
     const feed = await parser.parseURL(RSS_URL);
@@ -151,23 +132,20 @@ async function scrapeNews() {
     for (const item of feed.items) {
       const title = item.title?.trim();
       const pageLink = item.link?.trim();
-      const created_at = item.pubDate
-        ? new Date(item.pubDate)
-        : new Date();
+      const created_at = item.pubDate ? new Date(item.pubDate) : new Date();
 
       if (!title || !pageLink) continue;
+
       if (
-        newsData.some(
-          n => n.title === title || n.link === pageLink
-        )
+        newsData.some(n => n.title === title || n.link === pageLink)
       ) continue;
 
       const { summary, deadline, originalLink } =
         await extractData(page, pageLink);
 
-      newsData.push({
+        newsData.push({
         title,
-        link: originalLink || pageLink,
+        link: originalLink || null, // إذا لم يوجد link يظل null
         created_at,
         summary,
         deadline,
@@ -188,7 +166,6 @@ async function scrapeNews() {
     );
 
     console.log(`✅ تم حفظ ${added} خبر جديد`);
-
   } catch (err) {
     console.error("❌ خطأ عند جلب الأخبار:", err.message);
   } finally {
@@ -202,13 +179,19 @@ scrapeNews();
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
 
-/* ======================================
-API
-====================================== */
+/* ====================================== API ====================================== */
 app.get("/api/news", (req, res) => {
+  // إذا الرابط الأصلي مش موجود، نضع رسالة تعذر
+  const items = newsData.map(n => ({
+    ...n,
+    displayLink: n.link
+      ? n.link
+      : "نعتذر، الرابط غير متوفر سيتم ارفاقه قريبًا"
+  }));
+
   res.json({
     success: true,
-    data: { items: newsData }
+    data: { items }
   });
 });
 

@@ -54,7 +54,12 @@ async function loadNews() {
       // إزالة جديد بعد 3 أيام
       if (diffDays >= 3) n.isNew = false;
     });
-
+// زر العودة للأعلى
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) toTop.classList.add("show");
+  else toTop.classList.remove("show");
+});
+toTop.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
     // Pagination
     const pagination = document.createElement("div");
     pagination.className = "pagination";
@@ -74,11 +79,44 @@ async function loadNews() {
 }
 
 loadNews();
-setInterval(loadNews, 5 * 60 * 1000);
+// Navbar toggle menu
+(function() {
+  const menuBtn = document.getElementById("menuBtn");
+  const navLinks = document.getElementById("navLinks");
 
-// زر العودة للأعلى
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) toTop.classList.add("show");
-  else toTop.classList.remove("show");
-});
-toTop.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+
+    // إغلاق القائمة عند الضغط على أي رابط على الجوال
+    navLinks.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        if (window.innerWidth <= 900) {
+          navLinks.classList.remove("active");
+        }
+      });
+    });
+  }
+})()
+(function() {
+  const menuBtn = document.getElementById("menuBtn");
+  const navLinks = document.getElementById("navLinks");
+
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+      menuBtn.classList.toggle("active"); // هذه لتدوير الزر
+    });
+
+    navLinks.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        if (window.innerWidth <= 900) {
+          navLinks.classList.remove("active");
+          menuBtn.classList.remove("active"); // يرجع الزر للوضع الأصلي
+        }
+      });
+    });
+  }
+})()
+;
