@@ -223,6 +223,24 @@ body {
   margin-top: 50px;
 }
 
+/* ===== Logo صغير وأنيق ===== */
+.footer img {
+  height: 47px;           /* حجم أصغر */
+  width: auto;
+  object-fit: contain;
+  padding: 4px;           /* تقليل المساحة حول اللوجو */
+  background: linear-gradient(135deg, #162447, #162447);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px #162447, 0 0 10px #162447 inset;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* تأثير عند التحويم */
+.footer img:hover {
+  transform: scale(1.08); /* يكبر شوي عند المرور */
+  box-shadow: 0 11px 25px rgba(0,0,0,0.6), 0 0 15px rgba(255, 255, 255, 0.5) inset;
+}
+
 
 /* ===== Navbar ===== */
 /* ===== Glass Navbar ===== */
@@ -319,6 +337,23 @@ body {
   .menu-btn {
     display: block;
   }
+}
+/* ===== Logo صغير وأنيق ===== */
+.nav-wrapper img {
+  height: 47px;           /* حجم أصغر */
+  width: auto;
+  object-fit: contain;
+  padding: 4px;           /* تقليل المساحة حول اللوجو */
+  background: linear-gradient(135deg, #162447, #162447);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px #162447, 0 0 10px #162447 inset;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* تأثير عند التحويم */
+.nav-wrapper img:hover {
+  transform: scale(1.08); /* يكبر شوي عند المرور */
+  box-shadow: 0 11px 25px rgba(0,0,0,0.6), 0 0 15px rgba(255, 255, 255, 0.5) inset;
 }
 /* ===== الروابط ===== */
 .contact-cards .card a {
