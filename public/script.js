@@ -49,19 +49,21 @@ async function loadNews() {
         n.isNew && diffDays < 3
           ? "<strong style='color:red'>جديد</strong><br>"
           : "";
-
-      card.innerHTML = 
-        `<h3>${n.title}</h3>
-        ${newLabel}
-        <p>${n.summary || ""}</p>
-        <p>🕒 تم الإضافة: ${createdDate.toLocaleString("ar-PS")}</p>
-        <p>⏰ آخر موعد للتقديم: ${getDeadline(n)}</p>
-        ${
-          n.link
-            ? `<a href="${n.link}" target="_blank" style="display:inline-block;margin-top:5px;">🔗 التسجيل من هنا</a>`
-            : `<span style="color:red;font-weight:bold;display:inline-block;margin-top:5px;">نعتذر، الرابط غير متوفر سيتم ارفاقه قريبًا</span>`
-        }`
-      ;
+card.innerHTML = `
+  <div class="card-img" style="background-image: url('/images/logo.jpg');"></div>
+  <h3>${n.title}</h3>
+  ${newLabel}
+  <p>${n.summary || ""}</p>
+  <p>🕒 تم الإضافة: ${createdDate.toLocaleString("ar-PS")}</p>
+  <p>⏰ آخر موعد : ${  getDeadline(style='color:red'
+    
+  ) }</p>
+  ${
+    n.link
+      ? `<a href="${n.link}" target="_blank" style="display:inline-block;margin-top:5px;">🔗 التسجيل من هنا</a>`
+      : `<span style="color:red;font-weight:bold;display:inline-block;margin-top:5px;">نعتذر، الرابط غير متوفر سيتم ارفاقه قريبًا</span>`
+  }`
+;
 
       list.appendChild(card);
 

@@ -105,7 +105,6 @@ newsData.push({
 scrapeNews();
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10*60*1000);
-
 // ====================================== API مع حماية ذكية ======================================
 const API_SECRET = "linkgaza_secret_2026";
 app.get("/api/news", (req,res)=>{
