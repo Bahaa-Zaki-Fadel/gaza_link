@@ -61,7 +61,7 @@ card.innerHTML = `
   ${
     n.link
       ? `<a href="${n.link}" target="_blank" style="display:inline-block;margin-top:5px;">🔗 التسجيل من هنا</a>`
-      : `<span style="color:red;font-weight:bold;display:inline-block;margin-top:5px;">نعتذر، الرابط غير متوفر سيتم ارفاقه قريبًا</span>`
+      : `<span style="color:red;font-weight:bold;display:inline-block;margin-top:5px;">نعتذر، الرابط غير متوفر   </span>`
   }`
 ;
 

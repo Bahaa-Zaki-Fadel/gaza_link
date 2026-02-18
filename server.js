@@ -116,7 +116,7 @@ app.get("/api/news", (req,res)=>{
 
   const items = newsData.map(n=>({
     ...n,
-    displayLink:n.link ? n.link : "نعتذر، الرابط غير متوفر سيتم ارفاقه قريبًا"
+    displayLink:n.link ? n.link : "نعتذر، الرابط غير متوفر   "
   }));
 
   res.json({ success:true, data:{ items } });
