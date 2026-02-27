@@ -14,7 +14,7 @@ async function loadNews() {
   try {
     const res = await fetch("/api/news?limit=200", {
       headers: {
-        "x-api-key": "linkgaza_secret_2026" // 🔐 الحماية فقط
+        "x-api-key": "linkgaza_secret_2026"
       }
     });
 
@@ -49,21 +49,23 @@ async function loadNews() {
         n.isNew && diffDays < 3
           ? "<strong style='color:red'>جديد</strong><br>"
           : "";
-card.innerHTML = `
-  <div class="card-img" style="background-image: url('/images/logo.jpg');"></div>
-  <h3>${n.title}</h3>
-  ${newLabel}
-  <p>${n.summary || ""}</p>
-  <p>🕒 تم الإضافة: ${createdDate.toLocaleString("ar-PS")}</p>
-  <p>⏰ آخر موعد : ${  getDeadline(style='color:red'
-    
-  ) }</p>
-  ${
-    n.link
-      ? `<a href="${n.link}" target="_blank" style="display:inline-block;margin-top:5px;">🔗 التسجيل من هنا</a>`
-      : `<span style="color:red;font-weight:bold;display:inline-block;margin-top:5px;">نعتذر، الرابط غير متوفر   </span>`
-  }`
-;
+
+const detailsUrl = `/news/${n.slug}`;
+      card.innerHTML = `
+        <div class="card-img" style="background-image: url('/images/logo.jpg');"></div>
+        <h3>${n.title}</h3>
+        ${newLabel}
+
+        <div class="news-summary">
+          ${n.summary || ""}
+        </div>
+        <p>🕒 تم الإضافة: ${createdDate.toLocaleString("ar-PS")}</p>
+
+        <a href="${detailsUrl}" class="read-more-btn">
+          قراءة المزيد .....
+        </a>
+
+      `;
 
       list.appendChild(card);
 
@@ -86,6 +88,7 @@ card.innerHTML = `
     }
 
     list.appendChild(pagination);
+
   } catch (err) {
     console.error(err);
     list.innerHTML = "<p>⚠️ فشل تحميل الأخبار</p>";

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل الخبر - LinkGaza</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/png" href="/images/logo.jpg">
+</head>
+
+<body class="home-page">
+
+  <nav class="glass-navbar">
+    <div class="nav-wrapper">
+      <img src="/images/logo.jpg" class="hero-logo">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/index.html">الرئيسية</a></li>
+        <li><a href="/about.html">عن الموقع</a></li>
+        <li><a href="/contact.html">تواصل معنا</a></li>
+      </ul>
+      <div class="menu-btn" id="menuBtn">☰</div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>تفاصيل الخبر</h1>
+    <p>سيتم عرض العنوان المختار هنا</p>
+    <br>
+  </header>
+
+  <main class="container">
+    <div id="news-one"></div>
+    <div id="loading" class="loading">⏳ جاري تحميل الخبر...</div>
+  </main>
+
+  <footer class="footer">
+    © 2026 جميع الحقوق <img src="/images/logo.jpg" class="hero-logo"> محفوظة لـ LinkGaza
+  </footer>
+
+  <!-- صفحة التفاصيل فقط -->
+  <script defer src="/news-page.js"></script>
+
+  <!-- Navbar فقط -->
+  <script>
+    (function () {
+      const menuBtn = document.getElementById("menuBtn");
+      const navLinks = document.getElementById("navLinks");
+      if (!menuBtn || !navLinks) return;
+
+      menuBtn.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+        menuBtn.classList.toggle("active");
+      });
+    })();
+  </script>
+
+</body>
+</html>

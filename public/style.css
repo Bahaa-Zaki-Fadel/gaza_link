@@ -1,4 +1,33 @@
+/* ملخص أنيق 3 أسطر */
+.news-summary {
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #ffffff;
 
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* زر قراءة المزيد */
+.read-more-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #007bff, #00c3ff);
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.read-more-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
 .today-count{
   display:inline-block;
   margin-top:12px;

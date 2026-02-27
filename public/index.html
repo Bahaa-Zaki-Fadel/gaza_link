@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LinkGaza</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<title>وظائف غزة اليوم 2026 | فرص عمل ومساعدات محدثة يومياً - LinkGaza</title>
+<meta name="description" content="آخر وظائف غزة اليوم في قطاع غزة، فرص عمل، إعلانات توظيف ومساعدات إنسانية بروابط التسجيل الرسمية، محدثة يومياً عبر LinkGaza.">  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LBCEEYF9Q7"></script>
 <link rel="icon" type="image/png" href="/images/logo.jpg">
@@ -65,5 +65,35 @@
   <div id="ramadanMessage" class="ramadan-overlay">
   
 </div>
+<audio id="salatAudio" preload="auto">
+  <source src="/audio/salad.ogg" type="audio/ogg">
+</audio>
+
+<script>
+  const audio = document.getElementById("salatAudio");
+  let played = false;
+
+  async function playSalatOnce() {
+    if (played) return;
+    played = true;
+
+    try {
+      audio.volume = 1.0;
+      audio.currentTime = 0;
+      await audio.play();
+    } catch (e) {
+      played = false;
+      return;
+    }
+
+    window.removeEventListener("touchstart", playSalatOnce);
+    window.removeEventListener("click", playSalatOnce);
+    window.removeEventListener("scroll", playSalatOnce);
+  }
+
+  window.addEventListener("touchstart", playSalatOnce, { passive: true });
+  window.addEventListener("click", playSalatOnce);
+  window.addEventListener("scroll", playSalatOnce, { passive: true });
+</script>
 </body>
 </html>
