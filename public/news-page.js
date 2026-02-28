@@ -3,10 +3,20 @@
   const loading = document.getElementById("loading");
   if (!box) return;
 
-  // ✅ نقرأ slug من الرابط: /g/xxx
-  const slug = decodeURIComponent(
-    (window.location.pathname.split("/g/")[1] || "").trim()
-  );
+  const path = window.location.pathname || "";
+
+  // يدعم /g/xxx و /news/xxx
+  let slug = "";
+  if (path.startsWith("/g/")) slug = path.slice(3);
+  else if (path.startsWith("/news/")) slug = path.slice(6);
+
+  slug = decodeURIComponent((slug || "").trim()).replace(/\/$/, "");
+
+  // دعم احتياطي لو كان الرابط ?id=
+  if (!slug) {
+    const params = new URLSearchParams(window.location.search);
+    slug = decodeURIComponent((params.get("id") || "").trim()).replace(/\/$/, "");
+  }
 
   if (!slug) {
     if (loading) loading.style.display = "none";
@@ -20,13 +30,12 @@
     });
 
     const json = await res.json();
-
     if (!res.ok || json?.success === false) {
       throw new Error(json?.message || "Access denied");
     }
 
     const items = json?.data?.items || [];
-    const n = items.find(x => x.slug === slug);
+    const n = items.find(x => (x.slug || "") === slug);
 
     if (loading) loading.style.display = "none";
 
@@ -35,10 +44,8 @@
       return;
     }
 
-    const cleanSummary = (n.summary || "")
-      .replace(/المتقدمون/gi, "")
-      .trim();
-
+    const createdDate = new Date(n.created_at);
+    const cleanSummary = (n.summary || "").replace(/المتقدمون/gi, "").trim();
     const deadlineText = (n.deadline || "").trim() || "غير محدد";
 
     const imgHtml = n.imageUrl
@@ -46,9 +53,8 @@
       : "";
 
     box.innerHTML = `
-      <div class="card" style="text-align:center;max-width:800px;margin:0 auto;">
+      <div class="card" style="text-align:center;">
         ${imgHtml}
-
         <h2 style="margin:10px 0 12px;">${n.title}</h2>
 
         <div style="line-height:1.9;margin:10px 0 14px;text-align:center;">
@@ -67,9 +73,7 @@
             : `<div style="color:red;font-weight:bold;">نعتذر، الرابط غير متوفر</div>`
         }
 
-        <br>
-
-        <a href="/" class="read-more-btn" style="display:inline-block;margin:6px 0 14px;">
+        <a href="/index.html" class="read-more-btn" style="display:inline-block;margin:10px 0 0;">
           ← الرجوع للصفحة الرئيسية
         </a>
       </div>
