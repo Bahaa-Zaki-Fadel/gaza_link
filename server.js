@@ -25,6 +25,7 @@ const DATA_FILE = path.join(DATA_DIR, "news.json");
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
+// تحميل الأخبار لو موجودة
 let newsData = [];
 if (fs.existsSync(DATA_FILE)) {
   try {
@@ -44,10 +45,7 @@ function normalizeUrl(u) {
     .replace(/\/$/, "");
 }
 
-/* ========= توليد slug مختصر (ID + كلمات إنجليزية) =========
-   - يمنع الترميز %D9% لأنه يحافظ على a-z0-9 فقط
-   - يحاول يحول كلمات عربية شائعة إلى إنجليزي (jobs, gaza, maa...)
-*/
+/* ========= توليد slug مختصر (ID + كلمات إنجليزية) ========= */
 function toSeoEnglish(title = "") {
   let t = (title || "").toLowerCase();
 
@@ -60,8 +58,8 @@ function toSeoEnglish(title = "") {
     [/عمل/g, "job"],
     [/توظيف/g, "jobs"],
     [/مطلوب/g, "wanted"],
-    [/تعلن/g, "announce"],
     [/تعلن\s*عن/g, "announce"],
+    [/تعلن/g, "announce"],
     [/جمعية/g, "ngo"],
     [/مؤسسة/g, "org"],
     [/منظمة/g, "org"],
@@ -86,13 +84,12 @@ function toSeoEnglish(title = "") {
   t = t.replace(/[^a-z0-9\s-]/g, " ");
   t = t.replace(/\s+/g, " ").trim();
 
-  // خذ أول كلمتين فقط
+  // أول كلمتين فقط
   const words = t.split(" ").filter(Boolean).slice(0, 2);
 
-  // fallback إذا ما طلع شيء
+  // fallback
   if (!words.length) return "news";
   if (words.length === 1) return words[0];
-
   return `${words[0]}-${words[1]}`;
 }
 
@@ -106,7 +103,7 @@ function uniqueSlug(base, list) {
 }
 
 function createSlug(title) {
-  const id = newsData.length + 1; // ID ثابت داخل ملفك
+  const id = newsData.length + 1; // ID ثابت
   const kw = toSeoEnglish(title);
   return `${id}-${kw}`;
 }
@@ -145,7 +142,7 @@ async function extractData(page, link) {
       const summary =
         sentences.slice(0, 2).join(". ") + (sentences.length > 2 ? "..." : "");
 
-      // استخراج آخر موعد بشكل نظيف (فقط تاريخ)
+      // استخراج آخر موعد (تاريخ فقط)
       let deadline = null;
 
       const keywordMatch = text.match(
@@ -232,7 +229,7 @@ async function scrapeNews() {
 
       const { summary, deadline, originalLink } = await extractData(page, pageLink);
 
-      // ✅ slug مختصر: ID + كلمتين إنجليزي + منع تكرار
+      // slug مختصر + منع تكرار
       const baseSlug = createSlug(title);
       const slug = uniqueSlug(baseSlug, newsData);
 
@@ -277,8 +274,9 @@ const API_SECRET = "linkgaza_secret_2026";
 app.get("/api/news", (req, res) => {
   if (process.env.NODE_ENV === "production") {
     const key = req.headers["x-api-key"];
-    if (key !== API_SECRET)
+    if (key !== API_SECRET) {
       return res.status(403).json({ success: false, message: "Access denied" });
+    }
   }
 
   const limit = Math.min(parseInt(req.query.limit || "200", 10), 1000);
@@ -290,7 +288,7 @@ app.get("/api/news", (req, res) => {
   res.json({ success: true, data: { items } });
 });
 
-/* ✅ تحويل الروابط القديمة (id=sourceLink) */
+/* ✅ تحويل الروابط القديمة: /news-old?id=SOURCE_LINK */
 app.get("/news-old", (req, res) => {
   const old = (req.query.id || "").trim();
   if (!old) return res.redirect("/");
@@ -301,6 +299,32 @@ app.get("/news-old", (req, res) => {
   if (!target) return res.redirect("/");
 
   return res.redirect(301, `/g/${target.slug}`);
+});
+
+/* ✅ حل مشكلة /g/روابط عربية قديمة (تظهر %D9%...) */
+app.get("/g/*", (req, res, next) => {
+  // الجزء بعد /g/
+  const raw = decodeURIComponent(req.path.replace("/g/", "")).trim();
+
+  // لو فيه أحرف عربية => هذا رابط قديم
+  const looksArabic = /[\u0600-\u06FF]/.test(raw);
+
+  if (!looksArabic) return next();
+
+  // حاول تلاقيه حسب slug القديمة (لو محفوظة) أو حسب عنوانه
+  const foundBySlug = newsData.find((n) => (n.slug || "").trim() === raw);
+
+  if (foundBySlug) return res.redirect(301, `/g/${foundBySlug.slug}`);
+
+  // مطابقة تقريبية بالعنوان (ممكن العنوان موجود)
+  const foundByTitle = newsData.find((n) =>
+    (n.title || "").replace(/\s+/g, "-").includes(raw.slice(0, 10))
+  );
+
+  if (foundByTitle) return res.redirect(301, `/g/${foundByTitle.slug}`);
+
+  // إذا ما لقيناه، روح للرئيسية بدل error
+  return res.redirect("/");
 });
 
 /* ✅ صفحة التفاصيل المختصرة */
