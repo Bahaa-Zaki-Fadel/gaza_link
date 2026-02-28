@@ -50,7 +50,7 @@ async function loadNews() {
           ? "<strong style='color:red'>جديد</strong><br>"
           : "";
 
-const detailsUrl = `/news/${n.slug}`;
+const detailsUrl = `/g/${n.slug}`;
       card.innerHTML = `
         <div class="card-img" style="background-image: url('/images/logo.jpg');"></div>
         <h3>${n.title}</h3>
