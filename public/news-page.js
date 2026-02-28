@@ -3,9 +3,9 @@
   const loading = document.getElementById("loading");
   if (!box) return;
 
-  // نقرأ slug من الرابط: /news/xxx
+  // ✅ نقرأ slug من الرابط: /g/xxx
   const slug = decodeURIComponent(
-    (window.location.pathname.split("/news/")[1] || "").trim()
+    (window.location.pathname.split("/g/")[1] || "").trim()
   );
 
   if (!slug) {
@@ -35,31 +35,25 @@
       return;
     }
 
-    const createdDate = new Date(n.created_at);
-
     const cleanSummary = (n.summary || "")
       .replace(/المتقدمون/gi, "")
       .trim();
 
     const deadlineText = (n.deadline || "").trim() || "غير محدد";
 
-    // لو عندك imageUrl وتحب تعرضها، خليها، إذا لا شيل imgHtml
     const imgHtml = n.imageUrl
       ? `<img src="${n.imageUrl}" alt="صورة الخبر" style="max-width:100%;border-radius:14px;margin:10px 0;">`
       : "";
 
     box.innerHTML = `
-      <div class="card" style="text-align:center;">
-
-
+      <div class="card" style="text-align:center;max-width:800px;margin:0 auto;">
         ${imgHtml}
 
         <h2 style="margin:10px 0 12px;">${n.title}</h2>
 
-<div style="line-height:1.9;margin:10px 0 14px;text-align:center;">
+        <div style="line-height:1.9;margin:10px 0 14px;text-align:center;">
           ${cleanSummary}
         </div>
-
 
         <p style="margin:0 0 14px;">
           ⏰ آخر موعد: <span style="color:red;font-weight:bold;">${deadlineText}</span>
@@ -73,12 +67,11 @@
             : `<div style="color:red;font-weight:bold;">نعتذر، الرابط غير متوفر</div>`
         }
 
-        </br>\      
+        <br>
 
-        <a href="/index.html" class="read-more-btn" style="display:inline-block;margin:6px 0 14px;">
+        <a href="/" class="read-more-btn" style="display:inline-block;margin:6px 0 14px;">
           ← الرجوع للصفحة الرئيسية
         </a>
-
       </div>
     `;
   } catch (err) {
