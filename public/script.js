@@ -128,3 +128,17 @@ toTop.onclick = () =>
 
 /* ===== Start ===== */
 loadNews();
+
+const menuBtn = document.getElementById("menuBtn");
+const navLinks = document.getElementById("navLinks");
+
+if(menuBtn && navLinks){
+
+menuBtn.addEventListener("click",()=>{
+
+menuBtn.classList.toggle("active");
+navLinks.classList.toggle("active");
+
+});
+
+}
