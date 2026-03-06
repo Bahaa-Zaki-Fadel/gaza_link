@@ -7,6 +7,15 @@
 <meta name="description" content="آخر وظائف غزة اليوم في قطاع غزة، فرص عمل، إعلانات توظيف ومساعدات إنسانية بروابط التسجيل الرسمية، محدثة يومياً عبر LinkGaza.">  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LBCEEYF9Q7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-LBCEEYF9Q7', {
+    page_path: window.location.pathname
+  });
+</script>
 <link rel="icon" type="image/png" href="/images/logo.jpg">
 </head>
 <body class="home-page">
@@ -23,8 +32,12 @@
         <li><a href="contact.html">تواصل معنا</a></li>
       </ul>
       
-      <div class="menu-btn" id="menuBtn">☰</div>
-    </div>
+ <button class="menu-btn" id="menuBtn" aria-label="menu" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+
+<div class="nav-overlay" id="navOverlay"></div>
+  </div>
   </nav>
   
 
@@ -95,5 +108,6 @@
   window.addEventListener("click", playSalatOnce);
   window.addEventListener("scroll", playSalatOnce, { passive: true });
 </script>
+
 </body>
 </html>

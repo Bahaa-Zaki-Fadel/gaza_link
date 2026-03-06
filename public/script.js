@@ -128,3 +128,4 @@ toTop.onclick = () =>
 
 /* ===== Start ===== */
 loadNews();
+

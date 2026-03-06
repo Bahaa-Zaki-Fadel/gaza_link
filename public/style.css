@@ -1,3 +1,6 @@
+
+
+
 /* ملخص أنيق 3 أسطر */
 .news-summary {
   margin: 10px 0;
@@ -573,5 +576,184 @@ body {
 .search-box input:focus{
   border: 1px solid #ff416c;
   box-shadow: 0 0 20px rgba(255,65,108,0.4);
+}
+
+/* زر الهامبرغر */
+.menu-btn{
+  width:44px;height:44px;
+  border:0; background:transparent;
+  display:none; cursor:pointer;
+  position:relative;
+  z-index:1201;
+}
+.menu-btn span{
+  display:block;
+  height:3px;
+  width:26px;
+  margin:6px auto;
+  background:#fff;
+  border-radius:6px;
+  transition:transform .25s ease, opacity .2s ease;
+}
+
+/* يصير X */
+.menu-btn.active span:nth-child(1){
+  transform: translateY(9px) rotate(45deg);
+}
+.menu-btn.active span:nth-child(2){
+  opacity:0;
+}
+.menu-btn.active span:nth-child(3){
+  transform: translateY(-9px) rotate(-45deg);
+}
+
+/* overlay */
+.nav-overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  opacity:0; pointer-events:none;
+  transition:.2s ease;
+  z-index:1200;
+}
+.nav-overlay.active{
+  opacity:1; pointer-events:auto;
+}
+
+/* موبايل */
+@media (max-width: 900px){
+  .menu-btn{ display:block; }
+
+  .nav-links{
+    position:fixed;
+    top:0; right:0;
+    width:min(320px, 85vw);
+    height:100vh;
+    background:rgba(22,36,71,.95);
+    backdrop-filter: blur(10px);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:90px 18px 18px;
+    transform: translateX(110%);
+    transition: transform .25s ease;
+    z-index:1201;
+  }
+  .nav-links.active{
+    transform: translateX(0);
+  }
+}
+
+/* حركة سلسة للروابط */
+.nav-links a {
+  position: relative;
+  transition: all 0.35s ease;
+}
+
+/* خط يتحرك تحت الرابط */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  right: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg,#ff4b2b,#ff416c);
+  transition: width 0.35s ease;
+}
+
+/* عند الضغط أو المرور */
+.nav-links a:hover::after,
+.nav-links a.active::after {
+  width: 100%;
+}
+
+/* حركة ناعمة عند الضغط */
+.nav-links a:active {
+  transform: scale(0.95);
+}
+/* ===== Typography Upgrade ===== */
+:root{
+  --txt: #ffffff;
+  --muted: rgba(255,255,255,.78);
+  --muted2: rgba(255,255,255,.62);
+}
+
+body{
+  font-size: 18px;          /* أكبر */
+  line-height: 1.9;
+  letter-spacing: .2px;
+}
+
+.hero h1{
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1.15;
+}
+
+.hero p{
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: rgba(255,255,255,.92);
+}
+
+.card h3{
+  font-size: 1.55rem;       /* أكبر */
+  line-height: 1.35;
+}
+
+.card .summary{
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.card .meta{
+  font-size: 1rem;
+  color: var(--muted2);
+}
+
+.btn, .nav-btn, .card a{
+  font-size: 1rem;
+  padding: 12px 22px;
+}
+/* ===== Typography Upgrade ===== */
+:root{
+  --txt: #ffffff;
+  --muted: rgba(255,255,255,.78);
+  --muted2: rgba(255,255,255,.62);
+}
+
+
+body{
+  font-size: 18px;          /* أكبر */
+  line-height: 1.9;
+  letter-spacing: .2px;
+}
+
+.hero h1{
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1.15;
+}
+
+.hero p{
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: rgba(255,255,255,.92);
+}
+
+.card h3{
+  font-size: 1.55rem;       /* أكبر */
+  line-height: 1.35;
+}
+
+.card .summary{
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.card .meta{
+  font-size: 1rem;
+  color: var(--muted2);
+}
+
+.btn, .nav-btn, .card a{
+  font-size: 1rem;
+  padding: 12px 22px;
 }
 
