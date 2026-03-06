@@ -3,9 +3,10 @@
   const loading = document.getElementById("loading");
   if (!box) return;
 
-  // نقرأ slug من الرابط: /g/xxx أو /news/xxx
-  const pathParts = window.location.pathname.split("/").filter(Boolean);
-  const slug = decodeURIComponent(pathParts[pathParts.length - 1] || "").trim();
+  // نقرأ slug من الرابط: /news/xxx
+  const slug = decodeURIComponent(
+    (window.location.pathname.split("/news/")[1] || "").trim()
+  );
 
   if (!slug) {
     if (loading) loading.style.display = "none";
@@ -25,7 +26,7 @@
     }
 
     const items = json?.data?.items || [];
-    const n = items.find((x) => x.slug === slug);
+    const n = items.find(x => x.slug === slug);
 
     if (loading) loading.style.display = "none";
 
@@ -34,46 +35,52 @@
       return;
     }
 
-    const cleanSummary = String(n.summary || "")
+    const createdDate = new Date(n.created_at);
+
+    const cleanSummary = (n.summary || "")
       .replace(/المتقدمون/gi, "")
       .trim();
 
-    const deadlineText = String(n.deadline || "").trim() 
-    || "غير محدد";
+    const deadlineText = (n.deadline || "").trim() || "غير محدد";
 
+    // لو عندك imageUrl وتحب تعرضها، خليها، إذا لا شيل imgHtml
     const imgHtml = n.imageUrl
       ? `<img src="${n.imageUrl}" alt="صورة الخبر" style="max-width:100%;border-radius:14px;margin:10px 0;">`
       : "";
 
-    const linkHtml = n.link
-      ? `<a href="${n.link}" target="_blank" class="read-more-btn" style="display:inline-block;">
-           🔗 التسجيل من هنا
-         </a>`
-      : `<div style="color:red;font-weight:bold;">نعتذر، الرابط غير متوفر</div>`;
+    box.innerHTML = `
+      <div class="card" style="text-align:center;">
 
-    box.innerHTML = 
-      `<div class="card" style="text-align:center;">
+
         ${imgHtml}
 
         <h2 style="margin:10px 0 12px;">${n.title}</h2>
 
-        <div style="line-height:1.9;margin:10px 0 14px;text-align:center;">
+<div style="line-height:1.9;margin:10px 0 14px;text-align:center;">
           ${cleanSummary}
         </div>
+
 
         <p style="margin:0 0 14px;">
           ⏰ آخر موعد: <span style="color:red;font-weight:bold;">${deadlineText}</span>
         </p>
 
-        ${linkHtml}
+        ${
+          n.link
+            ? `<a href="${n.link}" target="_blank" class="read-more-btn" style="display:inline-block;">
+                 🔗 التسجيل من هنا
+               </a>`
+            : `<div style="color:red;font-weight:bold;">نعتذر، الرابط غير متوفر</div>`
+        }
 
-        <br><br>
+        </br>\      
 
         <a href="/index.html" class="read-more-btn" style="display:inline-block;margin:6px 0 14px;">
           ← الرجوع للصفحة الرئيسية
         </a>
-      </div>`
-    ;
+
+      </div>
+    `;
   } catch (err) {
     if (loading) loading.style.display = "none";
     box.innerHTML = `<p>⚠️ فشل تحميل الخبر: ${err.message}</p>`;
