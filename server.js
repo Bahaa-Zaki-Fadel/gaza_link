@@ -360,7 +360,10 @@ app.get("/g/*", (req, res, next) => {
   return res.redirect("/");
 });
 
-/* ✅ صفحة التفاصيل المختصرة */
+app.get("/news/:slug", (req, res) => {
+  return res.redirect(`/g/${req.params.slug}`);
+});
+
 app.get("/g/:slug", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "news.html"));
 });
