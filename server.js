@@ -140,8 +140,7 @@ https://t.me/linkGazaa
 
     console.log("❌ فشل إرسال الخبر إلى تلجرام:", err.response?.data || err.message);
   }
-}
-const app = express();
+}const app = express();
 app.use(express.static("public"));
 
 app.get("/وظائف-غزة-اليوم", (req, res) => {
@@ -152,28 +151,12 @@ const PORT = process.env.PORT || 30000;
 const RSS_URL = "https://www.motqdmon.com/feeds/posts/default?alt=rss";
 
 const parser = new Parser({
-  timeout: 60000,
-  headers: {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-  },
+  timeout: 30000,
+  headers: { "User-Agent": "Mozilla/5.0" },
 });
 
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "news.json");
-const SENT_FILE = path.join(DATA_DIR, "sent-links.json");
-
-if (!fs.existsSync(SENT_FILE)) {
-  fs.writeFileSync(SENT_FILE, "[]", "utf8");
-}
-
-let sentLinks = new Set();
-
-try {
-  sentLinks = new Set(JSON.parse(fs.readFileSync(SENT_FILE, "utf8")));
-} catch {
-  sentLinks = new Set();
-}
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
@@ -386,10 +369,6 @@ async function scrapeNews() {
       if (!title || !pageLink) continue;
 
       const cleanLink = normalizeUrl(pageLink);
-      if (sentLinks.has(cleanLink)) {
-  console.log("⛔ تم تجاهل خبر مكرر");
-  continue;
-}
 
       // منع التكرار
       if (newsData.some((n) => normalizeUrl(n.sourceLink) === cleanLink)) {
@@ -418,8 +397,6 @@ async function scrapeNews() {
 
       // أرسل أي خبر جديد مباشرة
       await sendTelegramMessage(title, pageUrl);
-      sentLinks.add(cleanLink);
-fs.writeFileSync(SENT_FILE, JSON.stringify([...sentLinks], null, 2), "utf8");
       await sleep(1500);
 
       added++;
@@ -445,8 +422,8 @@ fs.writeFileSync(SENT_FILE, JSON.stringify([...sentLinks], null, 2), "utf8");
 // أول تشغيل
 scrapeNews();
 // تحديث كل 10 دقائق
-setTimeout(scrapeNews, 10000);
 setInterval(scrapeNews, 10 * 60 * 1000);
+
 /* ====================================== API مع حماية ذكية ====================================== */
 const API_SECRET = "linkgaza_secret_2026";
 
@@ -459,7 +436,6 @@ app.get("/api/news", (req, res) => {
   }
 
   const limit = Math.min(parseInt(req.query.limit || "200", 10), 1000);
-
   const items = newsData.slice(0, limit).map((n) => ({
     ...n,
     displayLink: n.link ? n.link : "نعتذر، الرابط غير متوفر",
@@ -468,14 +444,47 @@ app.get("/api/news", (req, res) => {
   res.json({ success: true, data: { items } });
 });
 
+/* ✅ تحويل الروابط القديمة: /news-old?id=SOURCE_LINK */
+app.get("/news-old", (req, res) => {
+  const old = (req.query.id || "").trim();
+  if (!old) return res.redirect("/");
+
+  const target = newsData.find(
+    (n) => normalizeUrl(n.sourceLink) === normalizeUrl(old)
+  );
+  if (!target) return res.redirect("/");
+
+  return res.redirect(301, `/g/${target.slug}`);
+});
+
+/* ✅ حل مشكلة /g/روابط عربية قديمة (تظهر %D9%...) */
+app.get("/g/*", (req, res, next) => {
+  // الجزء بعد /g/
+  const raw = decodeURIComponent(req.path.replace("/g/", "")).trim();
+
+  // لو فيه أحرف عربية => هذا رابط قديم
+  const looksArabic = /[\u0600-\u06FF]/.test(raw);
+
+  if (!looksArabic) return next();
+
+  // حاول تلاقيه حسب slug القديمة (لو محفوظة) أو حسب عنوانه
+  const foundBySlug = newsData.find((n) => (n.slug || "").trim() === raw);
+
+  if (foundBySlug) return res.redirect(301, `/g/${foundBySlug.slug}`);
+
+  // مطابقة تقريبية بالعنوان (ممكن العنوان موجود)
+  const foundByTitle = newsData.find((n) =>
+    (n.title || "").replace(/\s+/g, "-").includes(raw.slice(0, 10))
+  );
+
+  if (foundByTitle) return res.redirect(301, `/g/${foundByTitle.slug}`);
+
+  // إذا ما لقيناه، روح للرئيسية بدل error
+  return res.redirect("/");
+});
+/* ✅ صفحة التفاصيل المختصرة */
 app.get("/news/:slug", (req, res) => {
-  return res.redirect(`/g/${req.params.slug}`);
+  return res.redirect(/g/`${req.params.slug}`);
 });
 
-app.get("/g/:slug", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "news.html"));
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`));
