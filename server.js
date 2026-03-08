@@ -8,31 +8,136 @@ const axios = require("axios");
 const TELEGRAM_TOKEN = "8411714946:AAHcoUGkvSHybYWjncpl5nSZzU3BU_eNqz0";
 const TELEGRAM_CHAT_ID = "@linkGazaa";
 
+function getNewsTag(title) {
+  const t = String(title || "").toLowerCase();
+
+  if (
+    t.includes("وظيفة") ||
+    t.includes("وظائف") ||
+    t.includes("فرص عمل") ||
+    t.includes("توظيف") ||
+    t.includes("مطلوب")
+  ) {
+    return "💼 فرصة عمل جديدة";
+  }
+
+  if (
+    t.includes("مساعدة") ||
+    t.includes("مساعدات") ||
+    t.includes("إغاثية") ||
+    t.includes("مالية") ||
+    t.includes("تسجيل المساعدات")
+  ) {
+    return "💰 إعلان مساعدات";
+  }
+
+  if (
+    t.includes("تدريب") ||
+    t.includes("متدربين") ||
+    t.includes("برنامج تدريبي") ||
+    t.includes("منحة")
+  ) {
+    return "🎓 فرصة تدريب";
+  }
+
+  if (
+    t.includes("صحي") ||
+    t.includes("صحة") ||
+    t.includes("طبي") ||
+    t.includes("مستشفى")
+  ) {
+    return "🏥 فرصة في القطاع الصحي";
+  }
+
+  if (
+    t.includes("تعليم") ||
+    t.includes("مدرسة") ||
+    t.includes("جامعة") ||
+    t.includes("دورة")
+  ) {
+    return "📚 فرصة تعليمية";
+  }
+
+  return "📢 إعلان جديد";
+}
+
 async function sendTelegramMessage(title, pageUrl) {
   try {
-    const message = `🤖 مرحباً بك في بوت LinkGaza
+    const tag = getNewsTag(title);
 
-📡 أنا بوت مخصص لنشر أحدث الوظائف والفرص في قطاع غزة فور صدورها على الموقع.
+    const titles = [
+      "🚨 خبر جديد نُشر الآن على منصة LinkGaza",
+      "🆕 تحديث جديد على منصة LinkGaza",
+      "📢 إعلان جديد وصل الآن على منصة LinkGaza",
+      "📡 جديد المنصة الآن",
+      "🚀 فرصة جديدة تم نشرها على منصة LinkGaza",
+      "📰 تم إضافة خبر جديد على منصة LinkGaza"
+    ];
 
-━━━━━━━━━━━━━━━
+    const botTexts = [
+      "🤖 أنا بوت LinkGaza، تم تكليفي بمتابعة منصة LinkGaza ونشر أحدث الأخبار والفرص فور إضافتها.",
+      "🤖 أنا بوت LinkGaza، أعمل على إرسال كل ما يُنشر حديثاً على المنصة ليصلكم أولاً بأول.",
+      "🤖 أنا بوت LinkGaza، مهمتي نقل الأخبار والفرص الجديدة فور صدورها على منصة LinkGaza.",
+      "🤖 أنا بوت LinkGaza، أرسل لكم كل جديد يتم نشره على منصة LinkGaza بشكل مباشر وسريع."
+    ];
 
-🆕 نُشر الآن على موقع LinkGaza
+    const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+    const randomBot = botTexts[Math.floor(Math.random() * botTexts.length)];
+
+    const message =` ${randomTitle}
+
+━━━━━━━━━━━━━━━━━━
+
+${tag}
 
 📢 ${title}
 
-🔎 التفاصيل من هنا :
+━━━━━━━━━━━━━━━━━━
+
+🔎 للاطلاع على التفاصيل الكاملة:
 ${pageUrl}
 
-━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 
-تابع القناة ليصلك كل جديد أولاً بأول.`;
+${randomBot}
+
+📡 
+تابع القناة ليصلك كل جديد باستمرار.
+https://t.me/linkGazaa
+
+`;
+
     await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
       chat_id: TELEGRAM_CHAT_ID,
-      text: message
+      text: message,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🔎 قراءة الخبر",
+              url: pageUrl
+            }
+          ],
+          [
+            {
+              text: "🔔 متابعة قناة LinkGaza",
+              url: "https://t.me/linkGazaa"
+            }
+          ]
+        ]
+      }
     });
 
-    console.log("📢 تم إضافة الخبر إلى تلجرام");
+    console.log("📢 تم إرسال الخبر إلى تلجرام");
   } catch (err) {
+    const retryAfter = err.response?.data?.parameters?.retry_after;
+
+    if (err.response?.data?.error_code === 429 && retryAfter) {
+      console.log(`⏳ تلجرام طلب انتظار ${retryAfter} ثواني...`);
+      await sleep((retryAfter + 1) * 1000);
+      return sendTelegramMessage(title, pageUrl);
+    }
+
     console.log("❌ فشل إرسال الخبر إلى تلجرام:", err.response?.data || err.message);
   }
 }
@@ -56,6 +161,19 @@ const parser = new Parser({
 
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "news.json");
+const SENT_FILE = path.join(DATA_DIR, "sent-links.json");
+
+if (!fs.existsSync(SENT_FILE)) {
+  fs.writeFileSync(SENT_FILE, "[]", "utf8");
+}
+
+let sentLinks = new Set();
+
+try {
+  sentLinks = new Set(JSON.parse(fs.readFileSync(SENT_FILE, "utf8")));
+} catch {
+  sentLinks = new Set();
+}
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
@@ -233,8 +351,17 @@ async function extractData(page, link) {
 }
 
 /* ====================================== جلب الأخبار من RSS ====================================== */
+let isScraping = false;
+
 async function scrapeNews() {
+  if (isScraping) {
+    console.log("⏳ scrapeNews شغالة بالفعل، تم تجاهل تشغيل جديد");
+    return;
+  }
+
+  isScraping = true;
   console.log("🔍 بدأ تنفيذ scrapeNews");
+
   let browser;
 
   try {
@@ -247,23 +374,32 @@ async function scrapeNews() {
     await page.setExtraHTTPHeaders({ "Accept-Language": "ar,en-US;q=0.9" });
 
     const feed = await parser.parseURL(RSS_URL);
+    const items = feed.items.slice(0, 25);
 
     let added = 0;
 
-    for (const item of feed.items) {
+    for (const item of items) {
       const title = item.title?.trim();
       const pageLink = item.link?.trim();
       const created_at = item.pubDate ? new Date(item.pubDate) : new Date();
 
       if (!title || !pageLink) continue;
-      if (newsData.some((n) => n.sourceLink === pageLink)) continue;
 
-      // تهدئة لتقليل 429
+      const cleanLink = normalizeUrl(pageLink);
+      if (sentLinks.has(cleanLink)) {
+  console.log("⛔ تم تجاهل خبر مكرر");
+  continue;
+}
+
+      // منع التكرار
+      if (newsData.some((n) => normalizeUrl(n.sourceLink) === cleanLink)) {
+        continue;
+      }
+
       await sleep(1200);
 
       const { summary, deadline, originalLink } = await extractData(page, pageLink);
 
-      // slug مختصر + منع تكرار
       const baseSlug = createSlug(title);
       const slug = uniqueSlug(baseSlug, newsData);
 
@@ -271,7 +407,7 @@ async function scrapeNews() {
         title,
         slug,
         link: originalLink || null,
-        sourceLink: pageLink,
+        sourceLink: cleanLink,
         created_at,
         summary,
         deadline,
@@ -279,13 +415,20 @@ async function scrapeNews() {
       });
 
       const pageUrl = `https://linkgaza.com/g/${slug}`;
-await sendTelegramMessage(title, pageUrl);
+
+      // أرسل أي خبر جديد مباشرة
+      await sendTelegramMessage(title, pageUrl);
+      sentLinks.add(cleanLink);
+fs.writeFileSync(SENT_FILE, JSON.stringify([...sentLinks], null, 2), "utf8");
+      await sleep(1500);
+
       added++;
       console.log("✔️ أُضيف:", title);
     }
 
     newsData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2));
+    fs.writeFileSync(DATA_FILE, JSON.stringify(newsData, null, 2), "utf8");
+
     console.log(`✅ تم حفظ ${added} خبر جديد`);
   } catch (err) {
     if (String(err.message || "").includes("429")) {
@@ -296,14 +439,14 @@ await sendTelegramMessage(title, pageUrl);
     }
   } finally {
     if (browser) await browser.close();
+    isScraping = false;
   }
 }
-
 // أول تشغيل
 scrapeNews();
 // تحديث كل 10 دقائق
+setTimeout(scrapeNews, 10000);
 setInterval(scrapeNews, 10 * 60 * 1000);
-
 /* ====================================== API مع حماية ذكية ====================================== */
 const API_SECRET = "linkgaza_secret_2026";
 
