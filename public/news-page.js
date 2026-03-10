@@ -48,7 +48,7 @@
       ? `<a href="${n.link}" target="_blank" class="read-more-btn" style="display:inline-block;">
            🔗 التسجيل من هنا
          </a>`
-      :   `<div style="color:red;font-weight:bold;">   سيتم ارفاق الرابط قريبا.....</div>`;
+      :   `<div style="color:red;font-weight:bold;">   سيتم ارفاق الرابط قريبا......</div>`;
 
     box.innerHTML = 
       `<div class="card" style="text-align:center;">

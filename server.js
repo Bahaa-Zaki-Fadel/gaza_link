@@ -419,8 +419,7 @@ async function scrapeNews() {
     isScraping = false;
   }
 }
-// أول تشغيل
-scrapeNews();
+
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
 
