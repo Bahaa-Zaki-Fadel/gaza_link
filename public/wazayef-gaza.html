@@ -1,112 +1,189 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>وظائف غزة اليوم | فرص عمل محدثة يومياً</title>
-  <meta name="description" content="آخر وظائف غزة اليوم، فرص عمل ومساعدات إنسانية محدثة باستمرار عبر LinkGaza.">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>ما نُشر اليوم | وظائف ومساعدات وأخبار غزة - LinkGaza</title>
+  <meta name="description" content="تابع كل ما نُشر اليوم من وظائف ومساعدات وأخبار جديدة في غزة على موقع LinkGaza.">
+  <meta name="keywords" content="ما نشر اليوم, وظائف غزة اليوم, مساعدات غزة اليوم, أخبار غزة اليوم, LinkGaza">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://linkgaza.com/today-posts.html">
+
+  <meta property="og:title" content="ما نُشر اليوم | وظائف ومساعدات وأخبار غزة - LinkGaza">
+  <meta property="og:description" content="تابع كل ما نُشر اليوم من وظائف ومساعدات وأخبار جديدة في غزة على موقع LinkGaza.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://linkgaza.com/today-posts.html">
+  <meta property="og:image" content="https://linkgaza.com/images/logo.jpg">
+  <meta property="og:site_name" content="LinkGaza">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ما نُشر اليوم | وظائف ومساعدات وأخبار غزة - LinkGaza">
+  <meta name="twitter:description" content="تابع كل ما نُشر اليوم من وظائف ومساعدات وأخبار جديدة في غزة على موقع LinkGaza.">
+  <meta name="twitter:image" content="https://linkgaza.com/images/logo.jpg">
+
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/png" href="/images/logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"CollectionPage",
+    "name":"ما نُشر اليوم",
+    "url":"https://linkgaza.com/today-posts.html",
+    "description":"صفحة مخصصة لعرض كل ما نُشر اليوم من وظائف ومساعدات وأخبار جديدة في غزة.",
+    "publisher":{
+      "@type":"Organization",
+      "name":"LinkGaza",
+      "logo":{
+        "@type":"ImageObject",
+        "url":"https://linkgaza.com/images/logo.jpg"
+      }
+    }
+  }
+  </script>
+
+  
 </head>
+
 <body class="home-page">
 
-<nav class="glass-navbar">
-  <div class="nav-wrapper">
-    <img src="/images/logo.jpg" class="hero-logo">
-    <ul class="nav-links">
-      <li><a href="/">الرئيسية</a></li>
-    </ul>
-  </div>
-</nav>
+  <nav class="glass-navbar">
+    <div class="nav-wrapper">
+      <img src="/images/logo.jpg" class="hero-logo" alt="LinkGaza Logo">
 
-<header class="hero">
-  <h1>وظائف غزة اليوم</h1>
-</header>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/index.html">الرئيسية</a></li>
+        <li><a href="/about.html">عن الموقع</a></li>
+        <li><a href="/contact.html">تواصل معنا</a></li>
+      </ul>
 
-<main class="container">
-  <div class="card" style="text-align:right; padding:20px">
-    
-    <h2>آخر فرص العمل في قطاع غزة</h2>
-    
-    <p>
-    يقدم موقع LinkGaza أحدث وظائف غزة اليوم بشكل يومي...
-    </p>
+<button class="menu-btn" id="menuBtn" aria-label="menu" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>     </div>
+  </nav>
 
-    <p>
-    يتم تحديث فرص العمل باستمرار لتشمل وظائف المؤسسات، الجمعيات، المنظمات الدولية...
-    </p>
+  <header class="hero">
+    <h1>ما نُشر اليوم</h1>
+    <p>تابع جميع الوظائف والمساعدات والأخبار التي تم نشرها اليوم فقط على موقع LinkGaza</p>
+    <br>
+  </header>
 
-  </div>
+  <main class="container">
+    <section>
+      <h2 style="margin-bottom:16px;">المنشورات المنشورة اليوم</h2>
 
-  <div class="card" style="text-align:right; padding:20px; line-height:1.9">
+      <div id="today-list"></div>
 
-<h2>وظائف غزة اليوم – آخر فرص العمل المحدثة يومياً</h2>
+      <div id="loading" class="loading">
+        ⏳ جاري تحميل منشورات اليوم...
+      </div>
+    </section>
+  </main>
 
-<p>
-إذا كنت تبحث عن وظائف غزة اليوم فأنت في المكان الصحيح. يقدم موقع LinkGaza أحدث فرص العمل في قطاع غزة بشكل يومي ومحدث لحظة بلحظة، سواء كانت وظائف في المؤسسات المحلية، الجمعيات الأهلية، المنظمات الدولية، أو شركات القطاع الخاص.
-</p>
+  <footer class="footer">
+    © 2026 جميع الحقوق <img src="/images/logo.jpg" class="hero-logo" alt="logo"> محفوظة لـ LinkGaza
+  </footer>
 
-<p>
-نحن نعمل على جمع أهم إعلانات التوظيف الرسمية ومراجعتها ثم عرضها بطريقة سهلة وسريعة تتيح لك الوصول إلى رابط التسجيل مباشرة دون تعقيد.
-</p>
+  <script>
+    function shortText(text, max = 180) {
+      const clean = String(text || "").replace(/\s+/g, " ").trim();
+      if (clean.length <= max) return clean;
+      return clean.slice(0, max) + "...";
+    }
 
-<h3>أحدث فرص عمل في غزة</h3>
+    async function loadTodayPosts() {
+      const box = document.getElementById("today-list");
+      const loading = document.getElementById("loading");
+      if (!box) {
+        console.error("العنصر today-list غير موجود");
+        return;
+      }
 
-<p>
-تشمل وظائف غزة اليوم فرصاً متنوعة في مجالات:
-</p>
+      try {
+        const res = await fetch("/api/news?limit=300", {
+          headers: {
+            "x-api-key": "linkgaza_secret_2026"
+          }
+        });
 
-<ul>
-<li>الوظائف الإدارية</li>
-<li>وظائف المحاسبة والمالية</li>
-<li>وظائف الهندسة</li>
-<li>وظائف القطاع الصحي</li>
-<li>وظائف التعليم</li>
-<li>وظائف المنظمات الدولية</li>
-<li>وظائف الخدمات والميدان</li>
-</ul>
+        if (!res.ok) {
+          throw new Error("فشل جلب الأخبار");
+        }
 
-<p>
-نحرص على تحديث فرص العمل بشكل مستمر حتى يتمكن الباحثون عن عمل من متابعة كل جديد أولاً بأول.
-</p>
+        const json = await res.json();
+        const items = json?.data?.items || json?.data || [];
 
-<h3>كيف تتقدم لوظائف غزة اليوم؟</h3>
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-<p>
-1. تصفح أحدث الوظائف المنشورة.<br>
-2. اقرأ تفاصيل الوظيفة والشروط المطلوبة.<br>
-3. اضغط على رابط التسجيل الرسمي.<br>
-4. جهز سيرتك الذاتية بشكل احترافي.<br>
-5. قدم الطلب قبل انتهاء الموعد المحدد.
-</p>
+        const todayPosts = items.filter(item => {
+          const created = new Date(item.created_at);
+          created.setHours(0, 0, 0, 0);
+          return created.getTime() === today.getTime();
+        });
 
-<h3>لماذا موقع LinkGaza هو الأفضل؟</h3>
+        box.innerHTML = "";
 
-<p>
-✔ تحديث يومي مستمر<br>
-✔ عرض رابط التسجيل الرسمي مباشرة<br>
-✔ تنسيق واضح وسريع القراءة<br>
-✔ متابعة مستمرة لمواعيد انتهاء التقديم<br>
-✔ تجميع فرص العمل في مكان واحد
-</p>
+        if (!todayPosts.length) {
+          box.innerHTML = 
+            `<div class="card">
+              <h3>لا توجد منشورات منشورة اليوم</h3>
+              <div class="summary">
+                سيتم عرض كل ما نُشر اليوم هنا فور إضافة منشورات جديدة بتاريخ اليوم.
+              </div>
+            </div>`
+          ;
+          if (loading) loading.style.display = "none";
+          return;
+        }
 
-<h3>نصائح مهمة للقبول في وظائف غزة</h3>
+        todayPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-<p>
-- تأكد من كتابة سيرة ذاتية واضحة ومنظمة.<br>
-- اقرأ شروط الوظيفة جيداً قبل التقديم.<br>
-- لا تنتظر حتى آخر يوم للتقديم.<br>
-- تابع الموقع يومياً حتى لا تفوتك أي فرصة.
-</p>
+        todayPosts.forEach(post => {
+          const card = document.createElement("div");
+          card.className = "card";
 
-<p>
-يعتبر البحث عن وظائف غزة اليوم أمراً يتطلب متابعة مستمرة بسبب التنافس العالي. لذلك يوفر LinkGaza منصة محدثة يومياً تساعدك في الوصول إلى الفرص المتاحة بسرعة وسهولة.
-</p>
+          card.innerHTML = 
+            `<h3>${post.title || ""}</h3>
+            <div class="summary">${shortText(post.summary || "", 180)}</div>
+            <div class="meta">🕒 تاريخ النشر: ${post.created_at ? new Date(post.created_at).toLocaleString("ar-PS") : ""}</div>
+            <a class="btn" href="/g/${post.slug}">قراءة المزيد .....</a>`
+          ;
 
-<p>
-استمر في متابعة الصفحة يومياً للحصول على أحدث فرص العمل والمساعدات في قطاع غزة.
-</p>
+          box.appendChild(card);
+        });
 
-</div>
-</main>
+        if (loading) loading.style.display = "none";
+
+      } catch (err) {
+        console.error(err);
+
+        box.innerHTML = 
+          `<div class="card">
+            <h3>⚠️ فشل تحميل منشورات اليوم</h3>
+            <div class="summary">${err.message}</div>
+          </div>`
+        ;
+
+        if (loading) loading.style.display = "none";
+      }
+    }
+
+    (function () {
+      const menuBtn = document.getElementById("menuBtn");
+      const navLinks = document.getElementById("navLinks");
+      if (!menuBtn || !navLinks) return;
+
+      menuBtn.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+        menuBtn.classList.toggle("active");
+      });
+    })();
+
+    document.addEventListener("DOMContentLoaded", loadTodayPosts);
+  </script>
 
 </body>
 </html>

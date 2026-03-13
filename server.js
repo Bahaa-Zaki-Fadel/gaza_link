@@ -5,8 +5,8 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
-const TELEGRAM_TOKEN = "8411714946:AAHcoUGkvSHybYWjncpl5nSZzU3BU_eNqz0";
-const TELEGRAM_CHAT_ID = "@linkGazaa";
+//  const TELEGRAM_TOKEN = "8411714946:AAHcoUGkvSHybYWjncpl5nSZzU3BU_eNqz0";
+ const TELEGRAM_CHAT_ID = "@linkGazaa";
 
 function getNewsTag(title) {
   const t = String(title || "").toLowerCase();
@@ -419,7 +419,8 @@ async function scrapeNews() {
     isScraping = false;
   }
 }
-
+// أول تشغيل
+scrapeNews();
 // تحديث كل 10 دقائق
 setInterval(scrapeNews, 10 * 60 * 1000);
 
@@ -481,9 +482,15 @@ app.get("/g/*", (req, res, next) => {
   // إذا ما لقيناه، روح للرئيسية بدل error
   return res.redirect("/");
 });
-/* ✅ صفحة التفاصيل المختصرة */
 app.get("/news/:slug", (req, res) => {
-  return res.redirect(/g/`${req.params.slug}`);
+  return res.redirect(`/g/${req.params.slug}`);
 });
 
-app.listen(PORT, () => console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`));
+app.get("/g/:slug", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "news.html"));
+});
+
+/* تشغيل السيرفر */
+app.listen(PORT, () => {
+  console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`);
+});

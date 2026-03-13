@@ -237,6 +237,11 @@ body {
   100% {opacity:1; transform: translateY(0);}
 }
 
+#today-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
 #toTop {
   position: fixed;
   bottom: 18px;
