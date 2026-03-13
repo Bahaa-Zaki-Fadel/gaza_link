@@ -5,7 +5,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
-//  const TELEGRAM_TOKEN = "8411714946:AAHcoUGkvSHybYWjncpl5nSZzU3BU_eNqz0";
+ const TELEGRAM_TOKEN = "8411714946:AAHcoUGkvSHybYWjncpl5nSZzU3BU_eNqz0";
  const TELEGRAM_CHAT_ID = "@linkGazaa";
 
 function getNewsTag(title) {
